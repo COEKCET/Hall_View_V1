@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>View Hall Plan — Student</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --accent:#0b63d6;
+  --accent-light:#1d8bf2;
+  --card:#ffffff;
+  --muted:#64748b;
+  --bg:#f7fbff;
+  --success:#16a34a;
+  --danger:#dc3545;
+  --cell-size:60px;
+  --transition-speed:0.3s;
+}
+
+*{box-sizing:border-box}
+body{
+  font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
+  margin:0;
+  background:var(--bg);
+  color:#0f172a;
+}
+
+.container{
+  max-width:960px;
+  margin:20px auto;
+  padding:18px;
+  animation:fadeInUp 0.5s ease-out;
+}
+.container1{
+  max-width:960px;
+  margin:20px auto;
+  padding:5px;
+  animation:fadeInUp 0.5s ease-out;
+  text-align: center;
+}
+.card{
+  background:var(--card);
+  border-radius:16px;
+  padding:20px;
+  box-shadow:0 12px 30px rgba(2,6,23,0.08);
+  transition:transform var(--transition-speed);
+}
+.card:hover{
+  transform:translateY(-4px);
+}
+
+header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:5px;
+  margin-bottom:5px;
+}
+header h1{
+  font-size:1.25rem;
+  color:var(--accent);
+  letter-spacing:0.5px;
+}
+
+.form-grid{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.form-grid > *{
+  flex:1;
+  min-width:140px;
+}
+label{
+  font-weight:600;
+  font-size:0.95rem;
+  margin-bottom:6px;
+  display:block;
+}
+input[type=date], input[type=text], select{
+  width:100%;
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid #cbd5e1;
+  transition: all 0.2s ease;
+}
+input:focus, select:focus{
+  border-color:var(--accent);
+  box-shadow:0 4px 12px rgba(11,99,214,0.2);
+  outline:none;
+}
+
+button.primary{
+  background:linear-gradient(90deg,var(--accent),var(--accent-light));
+  color:white;
+  padding:12px 18px;
+  border-radius:12px;
+  border:none;
+  cursor:pointer;
+  font-weight:600;
+  transition:all var(--transition-speed);
+}
+button.primary:hover{
+  transform:scale(1.05);
+  box-shadow:0 8px 20px rgba(11,99,214,0.25);
+}
+button.ghost{
+  background:transparent;
+  border:1px solid #cbd5e1;
+  padding:10px 16px;
+  border-radius:10px;
+  cursor:pointer;
+  transition:all var(--transition-speed);
+}
+button.ghost:hover{
+  background:#e6f0ff;
+}
+
+.notice{
+  color:var(--muted);
+  margin-top:8px;
+  font-size:0.95rem;
+}
+
+.student-card{
+  background:white;
+  border-left:6px solid var(--accent);
+  padding:16px 18px;
+  border-radius:12px;
+  box-shadow:0 6px 16px rgba(0,0,0,0.08);
+  margin-top:16px;
+  font-size:1rem;
+  color:#0f172a;
+  text-align: center;
+  animation:fadeInUp 0.5s ease-out;
+}
+
+.hall-title{
+  background:linear-gradient(90deg,var(--accent),var(--accent-light));
+  color:white;
+  padding:10px 16px;
+  border-radius:12px;
+  font-size:1.1rem;
+  font-weight:700;
+  margin-bottom:12px;
+  display:inline-block;
+  box-shadow:0 4px 12px rgba(11,99,214,0.2);
+}
+
+.hall-wrap{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  flex-wrap:wrap;
+  margin-top:16px;
+}
+.grid-wrap{
+  flex:1;
+  min-width:260px;
+  overflow:auto;
+  padding:8px;
+}
+
+.grid{
+  display:grid;
+  gap:8px;
+  justify-content:start;
+  align-items:center;
+  transition:all 0.3s ease;
+  grid-auto-flow:row;
+}
+
+.cell{
+  width:var(--cell-size);
+  height:calc(var(--cell-size) * 0.8);
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+  background:#e2e8f0;
+  color:#0f172a;
+  box-shadow:0 4px 10px rgba(2,6,23,0.05);
+  transition:all var(--transition-speed);
+  flex-shrink:0;
+}
+.cell.me{
+  background:linear-gradient(180deg,var(--accent),var(--accent-light));
+  color:white;
+  box-shadow:0 8px 22px rgba(11,99,214,0.3);
+  transform:scale(1.1);
+  font-size:1.05rem;
+}
+.cell.blank{
+  background:transparent;
+  color:transparent;
+  box-shadow:none;
+}
+
+.motivate-box{
+  margin-top:20px;
+  padding:16px;
+  background:linear-gradient(90deg,var(--accent),var(--accent-light));
+  color:white;
+  font-weight:700;
+  border-radius:12px;
+  text-align:center;
+  font-size:1.05rem;
+  opacity:0;
+  transform:translateY(10px);
+  animation:fadeUp 0.8s forwards ease-out;
+}
+
+.modal-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:40;
+}
+.modal{
+  width:90%;
+  max-width:480px;
+  background:white;
+  border-radius:16px;
+  padding:20px;
+  box-shadow:0 20px 50px rgba(2,6,23,0.2);
+  animation:fadeIn 0.3s ease-out;
+}
+.modal h3{
+  margin-bottom:12px;
+  font-size:1.25rem;
+  color:var(--accent);
+}
+.modal ol{
+  padding-left:18px;
+  margin-bottom:12px;
+}
+.modal li{
+  margin-bottom:8px;
+  line-height:1.4;
+}
+
+#popupOverlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.55);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+}
+.popupBox{
+  background:white;
+  padding:22px 28px;
+  border-radius:16px;
+  width:90%;
+  max-width:400px;
+  text-align:center;
+  box-shadow:0 10px 35px rgba(0,0,0,0.25);
+  animation:fadeIn 0.3s ease-out;
+}
+.popupBox h3{
+  margin-bottom:12px;
+  font-size:1.3rem;
+  font-weight:700;
+  color:var(--accent);
+}
+.popupBox p{
+  font-size:1rem;
+  margin-bottom:18px;
+  color:#555;
+}
+.popupBox button{
+  padding:12px 20px;
+  background:linear-gradient(90deg,var(--accent),var(--accent-light));
+  color:white;
+  border:none;
+  border-radius:10px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all 0.3s;
+}
+.popupBox button:hover{
+  transform:scale(1.05);
+  box-shadow:0 8px 20px rgba(11,99,214,0.25);
+}
+
+@keyframes fadeInUp{
+  from{opacity:0; transform:translateY(15px);}
+  to{opacity:1; transform:translateY(0);}
+}
+@keyframes fadeUp{
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(10px);} 
+  to{opacity:1; transform:translateY(0);} 
+}
+
+@media(max-width:768px){
+  .form-grid{flex-direction:column;}
+  .cell{width:50px;height:40px;font-size:0.85rem;gap:8px;}
+  .grid{column-gap:2px;row-gap:3px;}
+  .grid-wrap{overflow-x:auto;}
+}
+
+@media(max-width:480px){
+  header h1{font-size:1.1rem;}
+  .student-card{font-size:0.95rem;padding:14px;}
+  .motivate-box{font-size:0.95rem;padding:14px;}
+  .cell{width:40px;height:32px;font-size:0.75rem;gap:8px;}
+  .grid{column-gap:2px;row-gap:3px;}
+  .grid-wrap{overflow-x:auto;}
+}
+</style>
+</head>
+<body>
+<div class="container1">
+  <header><h1>Kamaraj College of Engineering and Technology <br>(An Autonomous Institution)</h1></header></div>
+
+<div class="container">
+  <header><h1>📝Exam Hall — Student View</h1></header>
+
+  <div class="card">
+    <div class="form-grid">
+      <div>
+        <label for="date">Date</label>
+        <input id="date" type="date" />
+      </div>
+
+      <div>
+        <label for="session">Session</label>
+        <select id="session">
+          <option value="FN">FN (08:30–10:30)</option>
+          <option value="AN">AN (12:30–14:30)</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="regno">Register No</label>
+        <input id="regno" type="text" placeholder="Enter Register Number" />
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:12px;align-items:center">
+      <button class="primary" id="viewBtn" onclick="showInstructions()">Check Seating</button>
+      <div class="notice">Read instructions before viewing.</div>
+    </div>
+
+    <div id="studentInfo" class="student-card" style="display:none;"></div>
+
+    <div id="resultArea" style="display:none;margin-top:16px">
+      <div class="hall-wrap">
+        <div class="grid-wrap card" style="padding:12px;">
+          <div id="gridContainer" class="grid"></div>
+        </div>
+      </div>
+
+      <div id="motivateBox" class="motivate-box" style="display:none;">
+        🌟 Stay confident! You are fully prepared — Give your best in the exam! 🌟
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="instrModal" class="modal-backdrop">
+  <div class="modal">
+    <h3>Exam Instructions</h3>
+    <ol>
+      <li>Carry your ID card and Hall Ticket.</li>
+      <li>Mobile phones are prohibited.</li>
+      <li>Reach 15 minutes early.</li>
+      <li>Follow the invigilator's instructions strictly.</li>
+      <li>Ensure not carrying any written and Printed Materials.</li>
+    </ol>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+      <button class="ghost" onclick="closeInstructions()">Cancel</button>
+      <button class="primary" onclick="proceedToView()">I Agree — Check Seating</button>
+    </div>
+  </div>
+</div>
+
+<div id="popupOverlay" style="display:none;">
+  <div class="popupBox">
+    <h3 id="popupTitle">Message</h3>
+    <p id="popupMessage"></p>
+    <button onclick="closePopup()">OK</button>
+  </div>
+</div>
+
+<script>
+const GS_URL = "https://script.google.com/macros/s/AKfycbzHFT_wEBXzn1c29it8O8pjg-fiXzhjIQ8t6Xg_rQdJYAQ2TO0czZVOGqW9ahF5HhdA/exec";
+
+function showPopup(message, title="Notification"){
+  document.getElementById("popupTitle").innerText = title;
+  document.getElementById("popupMessage").innerText = message;
+  document.getElementById("popupOverlay").style.display = "flex";
+}
+
+function closePopup(){
+  document.getElementById("popupOverlay").style.display = "none";
+}
+
+function showInstructions(){
+  if(!document.getElementById('date').value || !document.getElementById('regno').value.trim()){
+    showPopup("Please enter date and register number", "Missing Inputs");
+    return;
+  }
+  document.getElementById("instrModal").style.display="flex";
+}
+
+function closeInstructions(){
+  document.getElementById("instrModal").style.display="none";
+}
+
+function proceedToView(){
+  closeInstructions();
+  viewHallPlan();
+}
+
+function formatToIST(dateObj){
+  const utc = dateObj.getTime() + (dateObj.getTimezoneOffset() * 60000);
+  const istOffset = 5.5 * 60 * 60000;
+  const ist = new Date(utc + istOffset);
+
+  const dd = String(ist.getDate()).padStart(2,'0');
+  const mm = String(ist.getMonth()+1).padStart(2,'0');
+  const yyyy = ist.getFullYear();
+
+  let hours = ist.getHours();
+  const minutes = String(ist.getMinutes()).padStart(2,'0');
+  const seconds = String(ist.getSeconds()).padStart(2,'0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const hh = String(hours).padStart(2,'0');
+
+  return `${dd}/${mm}/${yyyy}, ${hh}:${minutes}:${seconds} ${ampm}`;
+}
+
+function hasIncremented(date, session, reg){
+  const key = `viewed__${date}__${session}__${reg}`;
+  return localStorage.getItem(key) === '1';
+}
+function markIncremented(date, session, reg){
+  const key = `viewed__${date}__${session}__${reg}`;
+  localStorage.setItem(key, '1');
+}
+
+async function updateSeenCount(date, session, reg, lastSeenIST){
+  try{
+    const params = new URLSearchParams({action:'updateSeen', date:date, session:session, regno:reg, lastSeen: lastSeenIST});
+    const res = await fetch(`${GS_URL}?${params.toString()}`);
+    const j = await res.json();
+    return j;
+  } catch(e){
+    console.warn('updateSeenCount failed', e);
+    return null;
+  }
+}
+
+async function viewHallPlan(){
+  const date=document.getElementById('date').value;
+  const session=document.getElementById('session').value;
+  const reg=document.getElementById('regno').value.trim();
+
+  const btn=document.getElementById('viewBtn');
+  btn.disabled=true; 
+  btn.innerText='Checking...';
+
+  try{
+    const res = await fetch(`${GS_URL}?action=viewHallPlan&date=${encodeURIComponent(date)}&session=${encodeURIComponent(session)}&regno=${encodeURIComponent(reg)}`);
+    const j = await res.json();
+
+    btn.disabled=false; 
+    btn.innerText='Check Seating';
+
+    if(j.status!=="success"){
+      showPopup(j.message || "No record found for this Register Number on this Date/Session", "No Record");
+      document.getElementById("resultArea").style.display="none";
+      return;
+    }
+
+    document.getElementById("resultArea").style.display="block";
+
+    const me=j.me || {};
+    const hallPlan=j.hallPlan || [];
+
+    document.getElementById("studentInfo").style.display="block";
+    document.getElementById("studentInfo").innerHTML = `
+      <div class="hall-title">Hall: ${me.Hall}</div>
+      <div><b>Register No:</b> ${me.RegNo}</div>
+      <div><b>Seat No:</b> ${me.Seat}</div>
+    `;
+
+    // Seat matrix (snake pattern)
+    const rows = 5;
+    const cols = 5;
+    const matrix = [];
+    let seatNumber = 1;
+    for (let c = 0; c < cols; c++) {
+      const colSeats = [];
+      for (let r = 0; r < rows; r++) colSeats.push(seatNumber++);
+      if (c % 2 === 1) colSeats.reverse();
+      matrix.push(colSeats);
+    }
+    const finalMatrix = [];
+    for (let r = 0; r < rows; r++) {
+      const rowArr = [];
+      for (let c = 0; c < cols; c++) rowArr.push(matrix[c][r]);
+      finalMatrix.push(rowArr);
+    }
+
+    const grid = document.getElementById("gridContainer");
+    grid.style.gridTemplateColumns = `repeat(${cols}, var(--cell-size))`;
+    grid.innerHTML = "";
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const seatNo = finalMatrix[r][c];
+        const div = document.createElement("div");
+
+        if(Number(me.Seat) === seatNo){
+          div.className = "cell me";
+          div.innerText = seatNo;
+        } else {
+          div.className = "cell";
+          div.innerText = seatNo;
+        }
+
+        grid.appendChild(div);
+      }
+    }
+
+    document.getElementById("motivateBox").style.display="block";
+
+    if(!hasIncremented(date, session, reg)){
+      const now = new Date();
+      const ist = formatToIST(now);
+      const upd = await updateSeenCount(date, session, reg, ist);
+      if(upd && upd.status==='success') markIncremented(date, session, reg);
+    }
+
+  } catch(e){
+    console.error(e);
+    btn.disabled=false;
+    btn.innerText='Check Seating';
+    showPopup("Failed to fetch hall plan. Check your internet or try later.", "Error");
+  }
+}
+
+</script>
+</body>
+</html>

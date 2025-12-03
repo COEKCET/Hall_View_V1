@@ -1,0 +1,186 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel – Exam Hall Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+  body { background: linear-gradient(135deg, #4A00E0, #8E2DE2); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+  .container { width: 100%; max-width: 900px; background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); }
+  h2 { text-align: center; color: #333; margin-bottom: 25px; }
+  label { font-weight: 600; margin-top: 15px; display: block; }
+  input, select, button { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; margin-top: 8px; font-size: 16px; }
+  button { cursor: pointer; border: none; color: #fff; transition: 0.3s; }
+  button.download { background: #4A90E2; }
+  button.upload { background: #28A745; }
+  button.delete { background: #DC3545; }
+  button:hover { opacity: 0.9; }
+  .section { margin-bottom: 30px; }
+  .flex { display: flex; gap: 15px; flex-wrap: wrap; }
+  .flex > * { flex: 1; min-width: 150px; }
+  p.status { margin-top: 10px; color: green; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Admin Panel – Exam Hall Plan</h2>
+
+  <!-- Template Download -->
+  <div class="section">
+    <h3>Download Template</h3>
+    <label>Date</label>
+    <input type="date" id="tplDate">
+    <label>Session</label>
+    <select id="tplSession">
+      <option value="FN">FN</option>
+      <option value="AN">AN</option>
+    </select>
+    <label>Number of Students</label>
+    <input type="number" id="tplCount" placeholder="Enter student count">
+    <button class="download" onclick="downloadTemplate()">Download Template</button>
+    <p class="status" id="tplStatus"></p>
+  </div>
+
+  <!-- Upload Excel/CSV -->
+  <div class="section">
+    <h3>Upload Hall Plan</h3>
+    <input type="file" id="uploadFile" accept=".csv, .xlsx">
+    <button class="upload" onclick="uploadFile()">Upload File</button>
+    <p class="status" id="uploadStatus"></p>
+  </div>
+
+  <!-- Delete Records -->
+  <div class="section">
+    <h3>Delete Records</h3>
+    <label>Date</label>
+    <input type="date" id="delDate">
+    <label>Session</label>
+    <select id="delSession">
+      <option value="FN">FN</option>
+      <option value="AN">AN</option>
+    </select>
+    <button class="delete" onclick="deleteRecords()">Delete</button>
+    <p class="status" id="delStatus"></p>
+  </div>
+</div>
+
+<script>
+const GS_URL = "https://script.google.com/macros/s/AKfycbzHFT_wEBXzn1c29it8O8pjg-fiXzhjIQ8t6Xg_rQdJYAQ2TO0czZVOGqW9ahF5HhdA/exec";  // Your Apps Script Web App URL
+
+// ===================== DOWNLOAD TEMPLATE =====================
+function downloadTemplate() {
+  const dateInput = document.getElementById("tplDate").value; // yyyy-mm-dd
+  const session = document.getElementById("tplSession").value.trim();
+  const count = document.getElementById("tplCount").value.trim();
+
+  if(!dateInput || !session || !count) {
+    alert("Please fill all fields");
+    return;
+  }
+
+  // Convert yyyy-mm-dd → mm-dd-yyyy for filename
+  const [yyyy, mm, dd] = dateInput.split("-");
+  const formattedDate = `${mm}-${dd}-${yyyy}`;
+
+  fetch(`${GS_URL}?action=getTemplate&date=${dateInput}&session=${session}&count=${count}`)
+    .then(res => res.json())
+    .then(data => {
+      if(data.status === "success") {
+        // Convert JSON rows to CSV
+        const csv = data.template.map(r => r.join(",")).join("\n");
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Template_${formattedDate}_${session}.csv`; // Use formatted date
+        document.body.appendChild(a); // Needed for Firefox
+        a.click();
+        a.remove(); // Clean up
+
+        document.getElementById("tplStatus").innerText = "Template downloaded!";
+      } else {
+        document.getElementById("tplStatus").innerText = "Failed to fetch template";
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      document.getElementById("tplStatus").innerText = "Error downloading template";
+    });
+}
+
+// ===================== UPLOAD FILE =====================
+function uploadFile() {
+  const file = document.getElementById("uploadFile").files[0];
+  if(!file) { alert("Select a file first"); return; }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    let rows = [];
+    const text = e.target.result;
+    text.split("\n").forEach(line => {
+      if(line.trim() === "") return;
+      rows.push(line.split(","));
+    });
+
+    fetch(`${GS_URL}?action=uploadHallPlan&data=${encodeURIComponent(JSON.stringify(rows))}`)
+      .then(res => res.json())
+      .then(data => {
+        if(data.status === "success") {
+          document.getElementById("uploadStatus").innerText = "File uploaded successfully!";
+        }
+      });
+  };
+  reader.readAsText(file);
+}
+
+
+// ===================== DELETE RECORDS =====================
+
+function deleteRecords() {
+  const date = document.getElementById("delDate").value;
+  const session = document.getElementById("delSession").value;
+
+  if(!date || !session) { alert("Fill date and session"); return; }
+
+  if(!confirm(`Are you sure to delete all records for ${date} - ${session}?`)) return;
+
+  fetch(`${GS_URL}?action=deleteHallPlan&date=${date}&session=${session}`)
+    .then(res => res.json())
+    .then(data => {
+      if(data.status === "success") {
+        document.getElementById("delStatus").innerText = `Deleted ${data.deleted} records`;
+      } else {
+        document.getElementById("delStatus").innerText = `Error: ${data.message}`;
+      }
+    });
+}
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

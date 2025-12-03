@@ -484,7 +484,7 @@ async function viewHallPlan(){
     btn.innerText='Check Seating';
 
     if(j.status!=="success"){
-      showPopup(j.message || "No record found for this Register Number on this Date/Session", "No Record");
+      showPopup(j.message || "No record found for this Register Number on this Date/Session", "Pleease Wait");
       document.getElementById("resultArea").style.display="none";
       return;
     }

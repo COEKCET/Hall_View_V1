@@ -741,7 +741,7 @@ function closeModal(){document.getElementById('instrModal').style.display='none'
 function proceedToView(){closeModal();viewHallPlan();}
 
 /* ---- API ---- */
-const GS='https://script.google.com/macros/s/AKfycbwsnFGb9qba2FxzvKk_cowB8GMxFxzzvRfj7Y0sd-gKsWwftX2C3jU9dTgPA2XTX2Fr/exec';
+const GS='https://script.google.com/macros/s/AKfycbz5nRItrd4c_6LOS2zJOAagT_8DAm9P6pT_URU09za2wd9jMxjV6WdKw8sBYOyW9w/exec';
 
 function hasViewed(d,ses,r){return localStorage.getItem(`v__${d}__${ses}__${r}`)==='1';}
 function markViewed(d,ses,r){localStorage.setItem(`v__${d}__${ses}__${r}`,'1');}

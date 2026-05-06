@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Exam Hall Plan — Student Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display&family=DM+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pur1:#2D0065;
+  --pur2:#5B00C8;
+  --pur3:#7C3AED;
+  --pur4:#9F60FF;
+  --pur5:#C4A0FF;
+  --pur6:#E8D8FF;
+  --pur7:#F5EEFF;
+  --white:#ffffff;
+  --card-bg:rgba(255,255,255,0.92);
+  --card-border:rgba(139,92,246,0.18);
+  --input-bg:rgba(255,255,255,0.85);
+  --text-dark:#1A0040;
+  --text-mid:#4A1090;
+  --text-muted:#8B6BBE;
+  --seat-w:58px;
+  --seat-h:46px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'DM Sans',sans-serif;
+  min-height:100vh;
+  background:#0D0025;
+  overflow-x:hidden;
+  position:relative;
+}
+
+/* === HERO BACKGROUND === */
+.bg-hero{
+  position:fixed;inset:0;z-index:0;
+  background:linear-gradient(160deg,
+    #0D0025 0%,
+    #1A0050 20%,
+    #2D0090 40%,
+    #4A00C8 58%,
+    #6B21E8 72%,
+    #8B5CF6 85%,
+    #C4A0FF 100%
+  );
+  overflow:hidden;
+}
+.bg-hero::before{
+  content:'';
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 900px 600px at 20% 10%,rgba(139,92,246,0.5) 0%,transparent 70%),
+    radial-gradient(ellipse 600px 800px at 85% 30%,rgba(109,40,217,0.6) 0%,transparent 65%),
+    radial-gradient(ellipse 500px 400px at 50% 80%,rgba(196,160,255,0.3) 0%,transparent 60%);
+}
+
+/* Animated grid lines */
+.grid-bg{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px);
+  background-size:60px 60px;
+  animation:gridShift 20s linear infinite;
+}
+@keyframes gridShift{to{background-position:60px 60px;}}
+
+/* Floating orbs */
+.orb{
+  position:absolute;border-radius:50%;filter:blur(80px);
+  animation:orbPulse ease-in-out infinite;
+}
+.orb-a{width:500px;height:500px;background:rgba(139,92,246,0.4);top:-100px;right:-100px;animation-duration:14s;}
+.orb-b{width:350px;height:350px;background:rgba(196,160,255,0.25);bottom:-50px;left:-80px;animation-duration:10s;animation-delay:-5s;}
+.orb-c{width:200px;height:200px;background:rgba(255,255,255,0.1);top:50%;left:50%;animation-duration:8s;animation-delay:-3s;}
+@keyframes orbPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.15);}}
+
+/* Sparkle stars */
+.star{
+  position:absolute;border-radius:50%;
+  background:white;
+  animation:starTwinkle ease-in-out infinite;
+}
+@keyframes starTwinkle{0%,100%{opacity:0;transform:scale(0);}50%{opacity:1;transform:scale(1);}}
+
+/* === PAGE WRAPPER === */
+.page{
+  position:relative;z-index:1;
+  min-height:100vh;
+  padding:24px 16px 60px;
+  max-width:860px;
+  margin:0 auto;
+}
+
+/* === COLLEGE HEADER === */
+.college-strip{
+  background:rgba(255,255,255,0.12);
+  backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.2);
+  border-radius:16px;
+  padding:14px 20px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:24px;
+  animation:slideDown 0.7s cubic-bezier(.22,1,.36,1) both;
+}
+.college-logo{
+  width:42px;height:42px;flex-shrink:0;
+  background:linear-gradient(135deg,#fff,var(--pur6));
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;
+  box-shadow:0 4px 14px rgba(0,0,0,0.2);
+}
+.college-name{
+  font-size:0.82rem;font-weight:700;color:rgba(255,255,255,0.95);
+  line-height:1.3;
+}
+.college-sub{font-size:0.72rem;color:rgba(255,255,255,0.6);margin-top:2px;}
+.live-pill{
+  margin-left:auto;flex-shrink:0;
+  background:rgba(16,185,129,0.2);
+  border:1px solid rgba(16,185,129,0.4);
+  border-radius:50px;
+  padding:4px 10px;
+  font-size:0.7rem;font-weight:700;
+  color:#6ee7b7;
+  display:flex;align-items:center;gap:5px;
+  letter-spacing:0.5px;
+}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#10b981;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(1.5);}}
+
+/* === HERO TITLE === */
+.hero-section{
+  text-align:center;
+  padding:8px 0 28px;
+  animation:fadeUp 0.6s 0.1s cubic-bezier(.22,1,.36,1) both;
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:50px;
+  padding:5px 14px;
+  font-size:0.72rem;font-weight:700;letter-spacing:2px;
+  color:var(--pur5);
+  text-transform:uppercase;
+  margin-bottom:14px;
+}
+.hero-title{
+  font-family:'DM Serif Display',serif;
+  font-size:clamp(2rem,7vw,3.2rem);
+  font-weight:800;
+  color:#fff;
+  line-height:1.1;
+  margin-bottom:10px;
+  text-shadow:0 0 60px rgba(196,160,255,0.4);
+}
+.hero-title span{
+  background:linear-gradient(90deg,#E8D8FF,#C4A0FF,#9F60FF,#C4A0FF,#E8D8FF);
+  background-size:200% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:shimmer 3s linear infinite;
+}
+@keyframes shimmer{to{background-position:200% center;}}
+.hero-sub{font-size:0.92rem;color:rgba(255,255,255,0.55);}
+
+/* === LIVE CLOCK === */
+.clock-bar{
+  display:flex;justify-content:center;align-items:center;
+  gap:8px;margin-bottom:28px;
+  animation:fadeUp 0.5s 0.2s both;
+}
+.clock-block{
+  background:rgba(255,255,255,0.92);
+  border-radius:12px;padding:10px 14px;
+  text-align:center;
+  box-shadow:0 4px 20px rgba(0,0,0,0.15),0 0 0 1px rgba(139,92,246,0.15);
+  min-width:52px;
+}
+.clock-num{
+  font-family:'DM Mono',monospace;
+  font-size:1.3rem;font-weight:700;
+  color:var(--pur2);display:block;
+}
+.clock-lbl{font-size:0.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);}
+.clock-sep{
+  font-family:'DM Mono',monospace;font-size:1.4rem;
+  color:rgba(255,255,255,0.5);
+  animation:blink 1s step-end infinite;padding-bottom:8px;
+}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+.clock-ampm{
+  background:linear-gradient(135deg,var(--pur3),var(--pur4));
+  color:#fff;font-size:0.72rem;font-weight:800;letter-spacing:1px;
+  padding:6px 10px;border-radius:10px;
+}
+
+/* === WHITE GLASS CARD === */
+.card{
+  background:var(--card-bg);
+  backdrop-filter:blur(30px);
+  -webkit-backdrop-filter:blur(30px);
+  border:1px solid var(--card-border);
+  border-radius:24px;
+  padding:28px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.12),0 0 0 1px rgba(255,255,255,0.6) inset;
+  animation:fadeUp 0.5s cubic-bezier(.22,1,.36,1) both;
+}
+.card+.card{margin-top:18px;}
+
+/* Section label */
+.sec-label{
+  font-size:0.7rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+  color:var(--pur3);
+  display:flex;align-items:center;gap:8px;margin-bottom:20px;
+}
+.sec-label::after{content:'';flex:1;height:1.5px;background:linear-gradient(90deg,var(--pur5),transparent);border-radius:2px;}
+
+/* === FORM === */
+.form-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:14px;
+  margin-bottom:22px;
+}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field label{
+  font-size:0.78rem;font-weight:700;letter-spacing:0.5px;
+  color:var(--text-mid);
+}
+.field input,.field select{
+  background:var(--input-bg);
+  border:1.5px solid rgba(139,92,246,0.2);
+  border-radius:12px;
+  padding:12px 14px;
+  font-family:'DM Sans',sans-serif;
+  font-size:0.95rem;
+  font-weight:500;
+  color:var(--text-dark);
+  outline:none;
+  transition:all 0.25s;
+  width:100%;
+  box-shadow:0 2px 8px rgba(0,0,0,0.04);
+}
+.field input::placeholder{color:#B0A0D0;}
+.field input:focus,.field select:focus{
+  border-color:var(--pur3);
+  box-shadow:0 0 0 3px rgba(124,58,237,0.15),0 2px 8px rgba(0,0,0,0.06);
+  background:#fff;
+}
+.field select option{background:#fff;color:var(--text-dark);}
+::-webkit-calendar-picker-indicator{filter:hue-rotate(260deg) saturate(1.5);cursor:pointer;}
+
+/* === BUTTON === */
+.btn-main{
+  background:linear-gradient(135deg,var(--pur2),var(--pur3),var(--pur4));
+  background-size:200% 200%;
+  color:#fff;border:none;border-radius:14px;
+  padding:14px 28px;
+  font-family:'DM Sans',sans-serif;
+  font-size:1rem;font-weight:800;
+  cursor:pointer;letter-spacing:0.3px;
+  box-shadow:0 8px 28px rgba(109,40,217,0.45);
+  transition:all 0.3s cubic-bezier(.22,1,.36,1);
+  position:relative;overflow:hidden;
+  animation:gradShift 4s ease infinite;
+}
+@keyframes gradShift{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+.btn-main:hover{transform:translateY(-3px);box-shadow:0 14px 36px rgba(109,40,217,0.55);}
+.btn-main:active{transform:translateY(0);}
+.btn-main:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+.btn-main::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to right,transparent,rgba(255,255,255,0.15),transparent);
+  transform:translateX(-100%);
+  animation:sheen 3s ease-in-out infinite;
+}
+@keyframes sheen{to{transform:translateX(100%);}}
+
+.btn-ghost2{
+  background:rgba(139,92,246,0.08);
+  border:1.5px solid rgba(139,92,246,0.25);
+  color:var(--pur2);border-radius:12px;
+  padding:12px 20px;
+  font-family:'DM Sans',sans-serif;
+  font-size:0.9rem;font-weight:600;cursor:pointer;
+  transition:all 0.2s;
+}
+.btn-ghost2:hover{background:rgba(139,92,246,0.15);}
+
+/* === STUDENT INFO RESULT === */
+.result-banner{
+  background:linear-gradient(135deg,var(--pur2),var(--pur3));
+  border-radius:18px;padding:22px 24px;
+  color:#fff;margin-top:22px;
+  animation:popIn 0.5s cubic-bezier(.34,1.56,.64,1) both;
+  box-shadow:0 12px 36px rgba(109,40,217,0.35);
+  display:none;
+}
+@keyframes popIn{from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);}}
+.result-hall{
+  font-family:'Syne',sans-serif;
+  font-size:1.4rem;font-weight:800;
+  margin-bottom:16px;
+  display:flex;align-items:center;gap:10px;
+}
+.hall-tag{
+  display:inline-block;
+  background:rgba(255,255,255,0.2);
+  border:1px solid rgba(255,255,255,0.3);
+  border-radius:50px;padding:3px 14px;
+  font-size:0.9rem;font-weight:700;
+}
+.info-chips{display:flex;gap:16px;flex-wrap:wrap;}
+.chip{
+  background:rgba(255,255,255,0.15);
+  border:1px solid rgba(255,255,255,0.25);
+  border-radius:12px;padding:10px 16px;
+}
+.chip-l{font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:0.75;margin-bottom:4px;}
+.chip-v{font-size:1.1rem;font-weight:800;}
+
+/* === SEAT MAP CARD === */
+.seat-card{
+  background:#fff;
+  border:1px solid rgba(139,92,246,0.12);
+  border-radius:24px;
+  padding:28px;
+  margin-top:18px;
+  animation:fadeUp 0.5s 0.1s cubic-bezier(.22,1,.36,1) both;
+  box-shadow:0 20px 60px rgba(0,0,0,0.08),0 0 0 1px rgba(255,255,255,0.8) inset;
+}
+
+.blackboard{
+  background:linear-gradient(135deg,#1A0040,#2D0090);
+  border-radius:14px;padding:12px 16px;
+  text-align:center;
+  color:rgba(255,255,255,0.7);
+  font-size:0.78rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  margin-bottom:18px;
+  box-shadow:0 6px 20px rgba(29,0,100,0.3);
+  position:relative;overflow:hidden;
+}
+.blackboard::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);
+}
+
+.front-label{
+  text-align:center;font-size:0.75rem;font-weight:700;letter-spacing:1px;
+  color:var(--text-muted);text-transform:uppercase;margin-bottom:16px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+
+.legend-row{
+  display:flex;align-items:center;justify-content:flex-end;gap:18px;
+  margin-bottom:18px;flex-wrap:wrap;
+}
+.leg{display:flex;align-items:center;gap:7px;font-size:0.8rem;font-weight:600;color:var(--text-mid);}
+.leg-dot{width:18px;height:14px;border-radius:5px;}
+.leg-me{background:linear-gradient(135deg,#6D28D9,#8B5CF6);}
+.leg-other{background:#F0EBF8;border:1.5px solid #D8CAEF;}
+
+.grid-wrap{overflow-x:auto;padding:8px 0;}
+.seat-grid{
+  display:grid;gap:8px;
+  width:max-content;margin:0 auto;
+}
+.seat{
+  width:var(--seat-w);height:var(--seat-h);
+  border-radius:10px;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  font-weight:700;font-size:0.88rem;
+  background:#F5F0FF;
+  border:1.5px solid #E0D4F5;
+  color:#8B6BBE;
+  cursor:default;
+  transition:all 0.25s cubic-bezier(.22,1,.36,1);
+  position:relative;
+}
+.seat:hover{
+  background:#EBE3FF;
+  border-color:#C4A0FF;
+  color:var(--pur2);
+  transform:translateY(-2px);
+  box-shadow:0 6px 16px rgba(139,92,246,0.15);
+}
+/* THE STAR — YOUR SEAT */
+.seat.me{
+  background:linear-gradient(140deg,#5B00C8,#7C3AED,#9F60FF);
+  border:2.5px solid rgba(255,255,255,0.5);
+  color:#fff;
+  box-shadow:
+    0 0 0 4px rgba(139,92,246,0.25),
+    0 0 20px rgba(124,58,237,0.6),
+    0 10px 30px rgba(109,40,217,0.5);
+  transform:scale(1.18) translateY(-4px);
+  z-index:5;
+  animation:meSeat 2.5s ease-in-out infinite;
+}
+@keyframes meSeat{
+  0%,100%{
+    box-shadow:0 0 0 4px rgba(139,92,246,0.25),0 0 20px rgba(124,58,237,0.6),0 10px 30px rgba(109,40,217,0.5);
+  }
+  50%{
+    box-shadow:0 0 0 8px rgba(139,92,246,0.15),0 0 40px rgba(124,58,237,0.8),0 14px 40px rgba(109,40,217,0.6);
+  }
+}
+.seat.me::before{
+  content:'★ YOU';
+  position:absolute;top:-20px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(90deg,#FFD700,#FFA500);
+  color:#5B00C8;
+  font-size:0.55rem;font-weight:900;letter-spacing:1.5px;
+  padding:2px 8px;border-radius:50px;
+  white-space:nowrap;
+  box-shadow:0 2px 8px rgba(255,165,0,0.4);
+  animation:youBob 2s ease-in-out infinite;
+}
+@keyframes youBob{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(-2px);}}
+.seat.me .seat-sub{font-size:0.5rem;letter-spacing:1px;opacity:0.85;margin-top:1px;font-weight:600;}
+.seat-sub{font-size:0.55rem;color:var(--text-muted);letter-spacing:0.5px;margin-top:1px;}
+.seat.me .seat-sub{color:rgba(255,255,255,0.8);}
+
+/* === MOTIVATE === */
+.motivate-card{
+  background:linear-gradient(135deg,#3B00A0,#6D28D9,#8B5CF6);
+  border-radius:22px;padding:26px;text-align:center;
+  margin-top:18px;
+  border:1px solid rgba(255,255,255,0.15);
+  box-shadow:0 20px 50px rgba(92,33,186,0.4);
+  animation:fadeUp 0.6s 0.2s both;
+  display:none;
+  position:relative;overflow:hidden;
+}
+.motivate-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 30%,rgba(255,255,255,0.08),transparent 60%);
+}
+.mot-emoji{font-size:2.4rem;display:block;margin-bottom:10px;}
+.mot-title{font-family:'DM Serif Display',serif;font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:6px;position:relative;}
+.mot-text{font-size:0.9rem;color:rgba(255,255,255,0.75);position:relative;line-height:1.6;}
+
+/* === MODAL === */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(13,0,37,0.75);
+  backdrop-filter:blur(10px);
+  display:none;align-items:center;justify-content:center;
+  z-index:100;padding:20px;
+}
+.modal-box{
+  background:#fff;border-radius:24px;
+  padding:28px;width:100%;max-width:440px;
+  box-shadow:0 40px 100px rgba(0,0,0,0.4),0 0 0 1px rgba(139,92,246,0.15);
+  animation:modalPop 0.4s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes modalPop{from{opacity:0;transform:scale(0.85);}to{opacity:1;transform:scale(1);}}
+.modal-box h3{
+  font-family:'DM Serif Display',serif;font-size:1.3rem;font-weight:800;
+  color:var(--text-dark);margin-bottom:18px;
+  padding-bottom:14px;border-bottom:1.5px solid #F0EBF8;
+}
+.instr-list{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:22px;}
+.instr-list li{
+  display:flex;align-items:flex-start;gap:12px;
+  background:#FAF7FF;border:1px solid #EDE3FF;
+  border-radius:12px;padding:12px 14px;
+  font-size:0.9rem;color:var(--text-dark);line-height:1.4;
+}
+.instr-num{
+  background:linear-gradient(135deg,var(--pur2),var(--pur3));
+  color:#fff;border-radius:50%;
+  width:22px;height:22px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.7rem;font-weight:800;flex-shrink:0;margin-top:1px;
+}
+.modal-btns{display:flex;gap:10px;justify-content:flex-end;}
+
+/* === POPUP === */
+#popupOverlay{
+  position:fixed;inset:0;
+  background:rgba(13,0,37,0.75);
+  backdrop-filter:blur(10px);
+  display:none;justify-content:center;align-items:center;
+  z-index:200;padding:20px;
+}
+.popup{
+  background:#fff;border-radius:22px;
+  padding:30px 24px;width:100%;max-width:360px;
+  text-align:center;
+  box-shadow:0 30px 80px rgba(0,0,0,0.35),0 0 0 1px rgba(139,92,246,0.15);
+  animation:modalPop 0.4s cubic-bezier(.34,1.56,.64,1) both;
+}
+.popup-icon{font-size:2.4rem;display:block;margin-bottom:10px;}
+.popup h3{font-family:'DM Serif Display',serif;font-size:1.15rem;font-weight:800;color:var(--text-dark);margin-bottom:8px;}
+.popup p{color:#6B5B80;font-size:0.9rem;margin-bottom:20px;line-height:1.5;}
+
+/* === TOAST === */
+.toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:linear-gradient(135deg,var(--pur2),var(--pur3));
+  color:#fff;padding:12px 24px;
+  border-radius:50px;font-size:0.88rem;font-weight:700;
+  box-shadow:0 8px 28px rgba(109,40,217,0.4);
+  z-index:9998;opacity:0;
+  transition:all 0.4s cubic-bezier(.22,1,.36,1);
+  white-space:nowrap;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+
+/* === ANIMATIONS === */
+@keyframes slideDown{from{opacity:0;transform:translateY(-24px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+/* === RESPONSIVE === */
+@media(max-width:600px){
+  .page{padding:16px 12px 50px;}
+  .card{padding:20px 16px;}
+  .seat-card{padding:20px 14px;}
+  :root{--seat-w:50px;--seat-h:40px;}
+  .seat{font-size:0.78rem;border-radius:9px;}
+  .hero-title{font-size:1.8rem;}
+  .form-grid{grid-template-columns:1fr;}
+  .college-strip{flex-wrap:wrap;}
+  .clock-block{min-width:44px;padding:8px 10px;}
+  .clock-num{font-size:1.1rem;}
+  .seat.me::before{font-size:0.5rem;top:-18px;}
+}
+@media(max-width:380px){
+  :root{--seat-w:44px;--seat-h:36px;}
+  .seat.me{transform:scale(1.12) translateY(-3px);}
+}
+</style>
+</head>
+<body>
+
+<!-- BACKGROUND -->
+<div class="bg-hero">
+  <div class="grid-bg"></div>
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="orb orb-c"></div>
+</div>
+
+<div class="page">
+
+  <!-- COLLEGE HEADER -->
+  <div class="college-strip" style="animation-delay:0s">
+    <div class="college-logo">🎓</div>
+    <div>
+      <div class="college-name">Kamaraj College of Engineering and Technology</div>
+      <div class="college-sub">An Autonomous Institution</div>
+    </div>
+    <div class="live-pill">
+      <div class="live-dot"></div>LIVE
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero-section">
+    <div class="hero-eyebrow">✦ Student Portal ✦</div>
+    <h1 class="hero-title">📝 Exam Hall<br><span>Seating Plan</span></h1>
+    <p class="hero-sub">Find your assigned seat instantly — no hassle, no confusion.</p>
+  </div>
+
+  <!-- CLOCK -->
+  <div class="clock-bar">
+    <div class="clock-block"><span class="clock-num" id="hh">--</span><span class="clock-lbl">HRS</span></div>
+    <div class="clock-sep">:</div>
+    <div class="clock-block"><span class="clock-num" id="mm">--</span><span class="clock-lbl">MIN</span></div>
+    <div class="clock-sep">:</div>
+    <div class="clock-block"><span class="clock-num" id="ss">--</span><span class="clock-lbl">SEC</span></div>
+    <div class="clock-ampm" id="ampm">--</div>
+  </div>
+
+  <!-- SEARCH CARD -->
+  <div class="card">
+    <div class="sec-label">🔍 Find Your Seat</div>
+    <div class="form-grid">
+      <div class="field">
+        <label for="date">📅 Exam Date</label>
+        <input id="date" type="date"/>
+      </div>
+      <div class="field">
+        <label for="session">⏰ Session</label>
+        <select id="session">
+          <option value="FN">FN</option>
+          <option value="AN">AN</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="regno">🎓 Register Number</label>
+        <input id="regno" type="text" placeholder="e.g. 920424106001" autocomplete="off"/>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+      <button class="btn-main" id="viewBtn" onclick="showInstructions()">🚀 Check My Seat</button>
+      <span style="font-size:0.8rem;color:#9B8BBE;">Instructions appear before viewing</span>
+    </div>
+
+    <!-- RESULT BANNER -->
+    <div id="resultBanner" class="result-banner">
+      <div class="result-hall">
+        <span>🏫</span>
+        <span id="hallName">Hall A</span>
+        <span class="hall-tag" id="sessionTag">FN</span>
+      </div>
+      <div class="info-chips">
+        <div class="chip">
+          <div class="chip-l">Register No</div>
+          <div class="chip-v" id="regDisplay">—</div>
+        </div>
+        <div class="chip">
+          <div class="chip-l">Seat Number</div>
+          <div class="chip-v" id="seatDisplay">🪑 —</div>
+        </div>
+        <div class="chip">
+          <div class="chip-l">Date</div>
+          <div class="chip-v" id="dateDisplay">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEAT MAP -->
+  <div id="seatSection" style="display:none;">
+    <div class="seat-card">
+      <div class="sec-label" style="color:var(--pur2)">🪑 Seat Map</div>
+      <div class="legend-row">
+        <div class="leg"><div class="leg-dot leg-me"></div>Your Seat</div>
+        <div class="leg"><div class="leg-dot leg-other"></div>Others</div>
+      </div>
+      <div class="blackboard">📋 Blackboard / Invigilator Desk — Front</div>
+      <div class="front-label">↑ Front of Hall</div>
+      <div class="grid-wrap">
+        <div id="seatGrid" class="seat-grid"></div>
+      </div>
+    </div>
+
+    <!-- MOTIVATE -->
+    <div id="motivateCard" class="motivate-card">
+      <span class="mot-emoji">🌟</span>
+      <div class="mot-title">You've Got This!</div>
+      <p class="mot-text">Stay confident — your preparation will shine through. Give your absolute best. All the very best! 💜</p>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- INSTRUCTION MODAL -->
+<div id="instrModal" class="modal-overlay">
+  <div class="modal-box">
+    <h3>📋 Exam Instructions</h3>
+    <ul class="instr-list">
+      <li><div class="instr-num">1</div>Carry your College ID Card and Hall Ticket to the exam hall.</li>
+      <li><div class="instr-num">2</div>Mobile phones & electronic devices are strictly prohibited inside.</li>
+      <li><div class="instr-num">3</div>Arrive at least 15 minutes before the exam begins.</li>
+      <li><div class="instr-num">4</div>Do not carry any written or printed materials into the hall.</li>
+      <li><div class="instr-num">5</div>Follow the invigilator's instructions strictly at all times.</li>
+    </ul>
+    <div class="modal-btns">
+      <button class="btn-ghost2" onclick="closeModal()">Cancel</button>
+      <button class="btn-main" onclick="proceedToView()">✅ I Agree — View Seat</button>
+    </div>
+  </div>
+</div>
+
+<!-- POPUP -->
+<div id="popupOverlay">
+  <div class="popup">
+    <span class="popup-icon" id="popupIcon">ℹ️</span>
+    <h3 id="popupTitle">Notice</h3>
+    <p id="popupMsg"></p>
+    <button class="btn-main" style="width:100%;" onclick="closePopup()">OK, Got It</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---- STARS ---- */
+(function(){
+  const bg=document.querySelector('.bg-hero');
+  for(let i=0;i<40;i++){
+    const s=document.createElement('div');s.className='star';
+    const sz=1+Math.random()*3;
+    s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;animation-duration:${2+Math.random()*5}s;animation-delay:${-Math.random()*5}s;`;
+    bg.appendChild(s);
+  }
+})();
+
+/* ---- CLOCK ---- */
+function tick(){
+  const n=new Date();
+  let h=n.getHours(),m=n.getMinutes(),s=n.getSeconds();
+  const ap=h>=12?'PM':'AM';h=h%12||12;
+  document.getElementById('hh').textContent=String(h).padStart(2,'0');
+  document.getElementById('mm').textContent=String(m).padStart(2,'0');
+  document.getElementById('ss').textContent=String(s).padStart(2,'0');
+  document.getElementById('ampm').textContent=ap;
+}
+tick();setInterval(tick,1000);
+
+/* ---- TOAST ---- */
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+/* ---- POPUP ---- */
+function showPopup(msg,title,icon){
+  document.getElementById('popupIcon').textContent=icon||'ℹ️';
+  document.getElementById('popupTitle').textContent=title||'Notice';
+  document.getElementById('popupMsg').textContent=msg;
+  document.getElementById('popupOverlay').style.display='flex';
+}
+function closePopup(){document.getElementById('popupOverlay').style.display='none';}
+
+/* ---- MODAL ---- */
+function showInstructions(){
+  if(!document.getElementById('date').value){
+    showPopup('Please select the exam date.','Missing Date','📅');
+    return;
+  }
+  if(!document.getElementById('regno').value.trim()){
+    showPopup('Please enter your Register Number.','Missing Input','🎓');
+    return;
+  }
+  document.getElementById('instrModal').style.display='flex';
+}
+function closeModal(){document.getElementById('instrModal').style.display='none';}
+function proceedToView(){closeModal();viewHallPlan();}
+
+/* ---- API ---- */
+const GS='https://script.google.com/macros/s/AKfycbwsnFGb9qba2FxzvKk_cowB8GMxFxzzvRfj7Y0sd-gKsWwftX2C3jU9dTgPA2XTX2Fr/exec';
+
+function hasViewed(d,ses,r){return localStorage.getItem(`v__${d}__${ses}__${r}`)==='1';}
+function markViewed(d,ses,r){localStorage.setItem(`v__${d}__${ses}__${r}`,'1');}
+
+function istStamp(d){
+  const utc=d.getTime()+(d.getTimezoneOffset()*60000);
+  const ist=new Date(utc+19800000);
+  const dd=String(ist.getDate()).padStart(2,'0');
+  const mm=String(ist.getMonth()+1).padStart(2,'0');
+  let h=ist.getHours();const mi=String(ist.getMinutes()).padStart(2,'0');
+  const ap=h>=12?'PM':'AM';h=h%12||12;
+  return `${dd}/${mm}/${ist.getFullYear()}, ${String(h).padStart(2,'0')}:${mi} ${ap}`;
+}
+
+/* ---- SEAT MATRIX (snake/serpentine) ---- */
+function buildMatrix(rows,cols){
+  const m=[];
+  let n=1;
+  for(let c=0;c<cols;c++){
+    const col=[];
+    for(let r=0;r<rows;r++)col.push(n++);
+    if(c%2===1)col.reverse();
+    m.push(col);
+  }
+  const out=[];
+  for(let r=0;r<rows;r++){const row=[];for(let c=0;c<cols;c++)row.push(m[c][r]);out.push(row);}
+  return out;
+}
+
+/* ---- MAIN ---- */
+async function viewHallPlan(){
+  const date=document.getElementById('date').value;
+  const ses=document.getElementById('session').value;
+  const reg=document.getElementById('regno').value.trim();
+
+  const btn=document.getElementById('viewBtn');
+  btn.disabled=true;btn.innerHTML='⏳ Searching...';
+
+  try{
+    const res=await fetch(`${GS}?action=viewHallPlan&date=${encodeURIComponent(date)}&session=${encodeURIComponent(ses)}&regno=${encodeURIComponent(reg)}`);
+    const j=await res.json();
+
+    btn.disabled=false;btn.innerHTML='🚀 Check My Seat';
+
+    if(j.status!=='success'){
+      showPopup(j.message||'No record found. Please verify your Register Number, Date and Session.','Not Found','🔍');
+      document.getElementById('seatSection').style.display='none';
+      return;
+    }
+
+    const me=j.me||{};
+
+    /* Update banner */
+    document.getElementById('resultBanner').style.display='block';
+    document.getElementById('hallName').textContent='Hall: '+me.Hall;
+    document.getElementById('sessionTag').textContent=ses;
+    document.getElementById('regDisplay').textContent=me.RegNo;
+    document.getElementById('seatDisplay').textContent='🪑 '+me.Seat;
+    const [y,mo,da]=date.split('-');
+    document.getElementById('dateDisplay').textContent=`${da}/${mo}/${y}`;
+
+    /* Build grid */
+    const rows=5,cols=5;
+    const matrix=buildMatrix(rows,cols);
+    const grid=document.getElementById('seatGrid');
+    grid.style.gridTemplateColumns=`repeat(${cols},var(--seat-w))`;
+    grid.innerHTML='';
+
+    for(let r=0;r<rows;r++){
+      for(let c=0;c<cols;c++){
+        const sn=matrix[r][c];
+        const isMe=Number(me.Seat)===sn;
+        const div=document.createElement('div');
+        div.className='seat'+(isMe?' me':'');
+        div.innerHTML=`<span>${sn}</span><span class="seat-sub">Seat</span>`;
+        div.style.animationDelay=`${(r*cols+c)*0.04}s`;
+        div.style.animation='fadeUp 0.4s ease both';
+        grid.appendChild(div);
+      }
+    }
+
+    document.getElementById('seatSection').style.display='block';
+    document.getElementById('motivateCard').style.display='block';
+    toast('✅ Seat found! Scroll down to see your seat.');
+    document.getElementById('seatSection').scrollIntoView({behavior:'smooth',block:'start'});
+
+    if(!hasViewed(date,ses,reg)){
+      const ist=istStamp(new Date());
+      try{
+        const p=new URLSearchParams({action:'updateSeen',date,session:ses,regno:reg,lastSeen:ist});
+        const u=await fetch(`${GS}?${p}`);
+        const uj=await u.json();
+        if(uj&&uj.status==='success')markViewed(date,ses,reg);
+      }catch(e){}
+    }
+
+  }catch(e){
+    btn.disabled=false;btn.innerHTML='🚀 Check My Seat';
+    showPopup('Failed to fetch data. Please check your internet connection.','Connection Error','📡');
+  }
+}
+</script>
+</body>
+</html>

@@ -1,192 +1,597 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Panel – Exam Hall Plan</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Serif+Display&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-  body { background: linear-gradient(135deg, #4A00E0, #8E2DE2); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-  .container { width: 100%; max-width: 900px; background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); }
-  h2 { text-align: center; color: #333; margin-bottom: 25px; }
-  label { font-weight: 600; margin-top: 15px; display: block; }
-  input, select, button { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; margin-top: 8px; font-size: 16px; }
-  button { cursor: pointer; border: none; color: #fff; transition: 0.3s; }
-  button.download { background: #4A90E2; }
-  button.upload { background: #28A745; }
-  button.delete { background: #DC3545; }
-  button:hover { opacity: 0.9; }
-  .section { margin-bottom: 30px; }
-  .flex { display: flex; gap: 15px; flex-wrap: wrap; }
-  .flex > * { flex: 1; min-width: 150px; }
-  p.status { margin-top: 10px; color: green; font-weight: 600; }
+:root {
+  --pur1: #2D0065;
+  --pur2: #5B00C8;
+  --pur3: #7C3AED;
+  --pur4: #9F60FF;
+  --pur5: #C4A0FF;
+  --pur6: #E8D8FF;
+  --green: #10b981;
+  --blue: #3b82f6;
+  --red: #ef4444;
+  --text-dark: #1A0040;
+  --text-mid: #4A1090;
+  --text-muted: #8B6BBE;
+  --card-bg: rgba(255,255,255,0.95);
+  --radius: 16px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #0D0025;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ── BACKGROUND ── */
+.bg {
+  position: fixed; inset: 0; z-index: 0;
+  background: linear-gradient(160deg, #0D0025 0%, #1A0050 25%, #2D0090 50%, #5B00C8 75%, #7C3AED 100%);
+}
+.bg::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 800px 500px at 10% 5%, rgba(139,92,246,0.45) 0%, transparent 65%),
+    radial-gradient(ellipse 600px 700px at 90% 25%, rgba(109,40,217,0.5) 0%, transparent 60%),
+    radial-gradient(ellipse 400px 400px at 50% 90%, rgba(196,160,255,0.25) 0%, transparent 55%);
+}
+.grid-bg {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: gridMove 18s linear infinite;
+}
+@keyframes gridMove { to { background-position: 50px 50px; } }
+
+.orb {
+  position: absolute; border-radius: 50%; filter: blur(70px);
+  animation: pulse ease-in-out infinite;
+}
+.orb-a { width: 450px; height: 450px; background: rgba(124,58,237,0.35); top: -120px; right: -80px; animation-duration: 12s; }
+.orb-b { width: 300px; height: 300px; background: rgba(196,160,255,0.2); bottom: -60px; left: -60px; animation-duration: 9s; animation-delay: -4s; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.12)} }
+
+/* ── PAGE ── */
+.page {
+  position: relative; z-index: 1;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+}
+
+/* ── HEADER ── */
+.header {
+  background: rgba(255,255,255,0.10);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 18px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+  animation: slideDown 0.6s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes slideDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+.header-logo {
+  width: 44px; height: 44px; flex-shrink: 0;
+  background: linear-gradient(135deg, #fff, var(--pur6));
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+}
+.header-text { flex: 1; }
+.header-name { font-size: 0.85rem; font-weight: 800; color: #fff; line-height: 1.3; }
+.header-sub { font-size: 0.72rem; color: rgba(255,255,255,0.55); margin-top: 2px; }
+.admin-badge {
+  background: rgba(124,58,237,0.35);
+  border: 1px solid rgba(196,160,255,0.35);
+  border-radius: 50px;
+  padding: 5px 14px;
+  font-size: 0.7rem; font-weight: 800;
+  color: var(--pur5); letter-spacing: 1px;
+  text-transform: uppercase; flex-shrink: 0;
+}
+
+/* ── PORTAL REDIRECT BUTTON ── */
+.portal-wrap {
+  margin-bottom: 22px;
+  animation: fadeUp 0.5s 0.15s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+.portal-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: linear-gradient(130deg, #1a0050 0%, #3b0099 40%, #6d28d9 75%, #9f60ff 100%);
+  border: 1.5px solid rgba(196,160,255,0.3);
+  border-radius: 20px;
+  padding: 20px 24px;
+  cursor: pointer;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(.22,1,.36,1), box-shadow 0.3s;
+  box-shadow: 0 8px 32px rgba(109,40,217,0.5), 0 0 0 1px rgba(255,255,255,0.07) inset;
+  animation: btnGlow 3s ease-in-out infinite;
+}
+@keyframes btnGlow {
+  0%,100% { box-shadow: 0 8px 32px rgba(109,40,217,0.5), 0 0 0 1px rgba(255,255,255,0.07) inset; }
+  50% { box-shadow: 0 12px 48px rgba(109,40,217,0.75), 0 0 60px rgba(159,96,255,0.25), 0 0 0 1px rgba(255,255,255,0.1) inset; }
+}
+.portal-btn:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 18px 56px rgba(109,40,217,0.7), 0 0 80px rgba(159,96,255,0.3);
+}
+.portal-btn:active { transform: translateY(0) scale(0.99); }
+
+/* Sheen sweep */
+.portal-btn::before {
+  content: '';
+  position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  animation: sheen 2.8s ease-in-out infinite;
+}
+@keyframes sheen { to { left: 150%; } }
+
+/* Particle sparkles */
+.portal-btn::after {
+  content: '✦ ✦ ✦';
+  position: absolute; top: 8px; right: 60px;
+  font-size: 0.55rem; color: rgba(255,255,255,0.25);
+  letter-spacing: 6px;
+  animation: sparkleFloat 3s ease-in-out infinite;
+}
+@keyframes sparkleFloat { 0%,100%{opacity:0.25;transform:translateY(0)} 50%{opacity:0.6;transform:translateY(-4px)} }
+
+.portal-left { display: flex; align-items: center; gap: 16px; }
+.portal-icon-wrap {
+  width: 52px; height: 52px; flex-shrink: 0;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+  position: relative;
+}
+.portal-icon-wrap::after {
+  content: '';
+  position: absolute; inset: -3px;
+  border-radius: 16px;
+  border: 1.5px solid rgba(196,160,255,0.35);
+  animation: iconRing 2s ease-in-out infinite;
+}
+@keyframes iconRing { 0%,100%{opacity:0.35;transform:scale(1)} 50%{opacity:0.8;transform:scale(1.06)} }
+
+.portal-text-wrap { text-align: left; }
+.portal-label {
+  font-size: 0.65rem; font-weight: 800; letter-spacing: 2.5px;
+  text-transform: uppercase; color: var(--pur5); margin-bottom: 4px;
+}
+.portal-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.15rem; font-weight: 400;
+  color: #fff; line-height: 1.2;
+}
+.portal-sub { font-size: 0.78rem; color: rgba(255,255,255,0.55); margin-top: 3px; }
+
+.portal-arrow {
+  width: 42px; height: 42px; flex-shrink: 0;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+  transition: transform 0.3s, background 0.3s;
+}
+.portal-btn:hover .portal-arrow {
+  background: rgba(255,255,255,0.22);
+  transform: translateX(5px);
+}
+
+/* Live dot on button */
+.live-indicator {
+  position: absolute; top: 14px; right: 14px;
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(16,185,129,0.18);
+  border: 1px solid rgba(16,185,129,0.35);
+  border-radius: 50px;
+  padding: 3px 10px;
+  font-size: 0.65rem; font-weight: 800;
+  color: #6ee7b7; letter-spacing: 0.8px;
+}
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #10b981;
+  animation: livePulse 1.4s infinite;
+}
+@keyframes livePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(1.5)} }
+
+/* ── CARD ── */
+.card {
+  background: var(--card-bg);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 18px;
+  box-shadow: 0 16px 50px rgba(0,0,0,0.12), 0 0 0 1px rgba(255,255,255,0.7) inset;
+  border: 1px solid rgba(139,92,246,0.1);
+  animation: fadeUp 0.5s cubic-bezier(.22,1,.36,1) both;
+}
+.card:nth-child(2) { animation-delay: 0.05s; }
+.card:nth-child(3) { animation-delay: 0.10s; }
+.card:nth-child(4) { animation-delay: 0.15s; }
+
+.card-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1.5px solid #F0EBF8;
+}
+.card-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+.icon-blue  { background: rgba(59,130,246,0.12); }
+.icon-green { background: rgba(16,185,129,0.12); }
+.icon-red   { background: rgba(239,68,68,0.12); }
+
+.card-title {
+  font-size: 0.95rem; font-weight: 800;
+  color: var(--text-dark);
+}
+.card-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 1px; }
+
+/* ── FORM ── */
+.form-grid { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+.form-grid.single { grid-template-columns: 1fr; }
+
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label {
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.4px;
+  color: var(--text-mid);
+}
+.field input,
+.field select {
+  background: #faf7ff;
+  border: 1.5px solid rgba(139,92,246,0.18);
+  border-radius: 12px;
+  padding: 11px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.93rem; font-weight: 500;
+  color: var(--text-dark);
+  outline: none;
+  transition: all 0.22s;
+  width: 100%;
+}
+.field input::placeholder { color: #C0ADE0; }
+.field input:focus,
+.field select:focus {
+  border-color: var(--pur3);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
+}
+::-webkit-calendar-picker-indicator { filter: hue-rotate(260deg) saturate(1.5); cursor: pointer; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 13px 20px;
+  border: none; border-radius: 12px; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem; font-weight: 800;
+  margin-top: 14px;
+  transition: all 0.25s cubic-bezier(.22,1,.36,1);
+  position: relative; overflow: hidden;
+  letter-spacing: 0.2px;
+}
+.btn::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.13), transparent);
+  transform: translateX(-100%);
+  animation: btnSheen 2.5s ease-in-out infinite;
+}
+@keyframes btnSheen { to { transform: translateX(100%); } }
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(0); }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.btn-blue  { background: linear-gradient(135deg, #2563eb, #3b82f6, #60a5fa); color: #fff; box-shadow: 0 6px 20px rgba(59,130,246,0.4); }
+.btn-green { background: linear-gradient(135deg, #059669, #10b981, #34d399); color: #fff; box-shadow: 0 6px 20px rgba(16,185,129,0.4); }
+.btn-red   { background: linear-gradient(135deg, #dc2626, #ef4444, #f87171); color: #fff; box-shadow: 0 6px 20px rgba(239,68,68,0.4); }
+
+.btn-blue:hover  { box-shadow: 0 10px 28px rgba(59,130,246,0.55); }
+.btn-green:hover { box-shadow: 0 10px 28px rgba(16,185,129,0.55); }
+.btn-red:hover   { box-shadow: 0 10px 28px rgba(239,68,68,0.55); }
+
+/* ── STATUS ── */
+.status-msg {
+  margin-top: 10px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 0.82rem; font-weight: 700;
+  display: none;
+}
+.status-msg.success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; display: block; }
+.status-msg.error   { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; display: block; }
+.status-msg.info    { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; display: block; }
+
+/* ── DIVIDER LABEL ── */
+.sec-divider {
+  display: flex; align-items: center; gap: 10px;
+  margin: 4px 0 16px;
+}
+.sec-divider span {
+  font-size: 0.65rem; font-weight: 800; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--pur4);
+  white-space: nowrap;
+}
+.sec-divider::before, .sec-divider::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(124,58,237,0.25), transparent);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .page { padding: 14px 12px 48px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .card { padding: 18px 16px; }
+  .portal-btn { padding: 16px 18px; }
+  .portal-title { font-size: 1rem; }
+  .header { flex-wrap: wrap; }
+  .portal-btn::after { display: none; }
+}
+@media (max-width: 380px) {
+  .portal-icon-wrap { width: 42px; height: 42px; font-size: 1.3rem; }
+  .portal-arrow { width: 34px; height: 34px; font-size: 0.9rem; }
+}
 </style>
 </head>
 <body>
 
-<div class="container">
-  <h2>Admin Panel – Exam Hall Plan</h2>
-
-  <!-- Template Download -->
-  <div class="section">
-    <h3>Download Template</h3>
-    <label>Date</label>
-    <input type="date" id="tplDate">
-    <label>Session</label>
-    <select id="tplSession">
-      <option value="FN">FN</option>
-      <option value="AN">AN</option>
-    </select>
-    <label>Number of Students</label>
-    <input type="number" id="tplCount" placeholder="Enter student count">
-    <button class="download" onclick="downloadTemplate()">Download Template</button>
-    <p class="status" id="tplStatus"></p>
-  </div>
-
-  <!-- Upload Excel/CSV -->
-  <div class="section">
-    <h3>Upload Hall Plan</h3>
-    <input type="file" id="uploadFile" accept=".csv, .xlsx">
-    <button class="upload" onclick="uploadFile()">Upload File</button>
-    <p class="status" id="uploadStatus"></p>
-  </div>
-
-  <!-- Delete Records -->
-  <div class="section">
-    <h3>Delete Records</h3>
-    <label>Date</label>
-    <input type="date" id="delDate">
-    <label>Session</label>
-    <select id="delSession">
-      <option value="FN">FN</option>
-      <option value="AN">AN</option>
-    </select>
-    <button class="delete" onclick="deleteRecords()">Delete</button>
-    <p class="status" id="delStatus"></p>
-  </div>
+<div class="bg">
+  <div class="grid-bg"></div>
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
 </div>
 
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-logo">🎓</div>
+    <div class="header-text">
+      <div class="header-name">Kamaraj College of Engineering and Technology</div>
+      <div class="header-sub">Exam Hall Plan — Admin Control Panel</div>
+    </div>
+    <div class="admin-badge">⚙️ Admin</div>
+  </div>
+
+  <!-- ★ PORTAL REDIRECT BUTTON ★ -->
+  <div class="portal-wrap">
+    <a class="portal-btn" href="exam-hall-plan.html" target="_blank">
+      <div class="live-indicator"><div class="live-dot"></div>LIVE</div>
+      <div class="portal-left">
+        <div class="portal-icon-wrap">📝</div>
+        <div class="portal-text-wrap">
+          <div class="portal-label">✦ Student Portal ✦</div>
+          <div class="portal-title">Exam Hall Seating Plan</div>
+          <div class="portal-sub">Tap to open the student-facing portal →</div>
+        </div>
+      </div>
+      <div class="portal-arrow">→</div>
+    </a>
+  </div>
+
+  <div class="sec-divider"><span>Admin Tools</span></div>
+
+  <!-- DOWNLOAD TEMPLATE -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon icon-blue">📥</div>
+      <div>
+        <div class="card-title">Download Template</div>
+        <div class="card-sub">Generate a pre-filled CSV template for data entry</div>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label>📅 Exam Date</label>
+        <input type="date" id="tplDate">
+      </div>
+      <div class="field">
+        <label>⏰ Session</label>
+        <select id="tplSession">
+          <option value="FN">FN — Forenoon</option>
+          <option value="AN">AN — Afternoon</option>
+        </select>
+      </div>
+      <div class="field" style="grid-column:1/-1;">
+        <label>👥 Number of Students</label>
+        <input type="number" id="tplCount" placeholder="e.g. 25">
+      </div>
+    </div>
+    <button class="btn btn-blue" onclick="downloadTemplate()">
+      <span>⬇️</span><span>Download Template</span>
+    </button>
+    <div class="status-msg" id="tplStatus"></div>
+  </div>
+
+  <!-- UPLOAD FILE -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon icon-green">📤</div>
+      <div>
+        <div class="card-title">Upload Hall Plan</div>
+        <div class="card-sub">Import a filled CSV file to the database</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>📁 Select File (CSV / XLSX)</label>
+      <input type="file" id="uploadFile" accept=".csv,.xlsx">
+    </div>
+    <button class="btn btn-green" onclick="uploadFile()">
+      <span>🚀</span><span>Upload File</span>
+    </button>
+    <div class="status-msg" id="uploadStatus"></div>
+  </div>
+
+  <!-- DELETE RECORDS -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon icon-red">🗑️</div>
+      <div>
+        <div class="card-title">Delete Records</div>
+        <div class="card-sub">Permanently remove all entries for a date & session</div>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label>📅 Exam Date</label>
+        <input type="date" id="delDate">
+      </div>
+      <div class="field">
+        <label>⏰ Session</label>
+        <select id="delSession">
+          <option value="FN">FN — Forenoon</option>
+          <option value="AN">AN — Afternoon</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-red" onclick="deleteRecords()">
+      <span>🗑️</span><span>Delete Records</span>
+    </button>
+    <div class="status-msg" id="delStatus"></div>
+  </div>
+
+</div><!-- /page -->
+
 <script>
-const GS_URL = "https://script.google.com/macros/s/AKfycbzlDeYBawXZxE1Sb2gO_9ROsnUXV8mCXFMFv6KZwN9WfEmbqNijkngdM4mpOvb7tv8/exec";  // Your Apps Script Web App URL
+const GS_URL = "https://script.google.com/macros/s/AKfycbzvbkkbY39ofd6sMx6KciGX4yxGctpvuXAvEjVc7MDoT7bq-XSXQJdPJJSeohAMwpCy/exec";
 
-// ===================== DOWNLOAD TEMPLATE =====================
+function setStatus(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = 'status-msg ' + type;
+}
+
+// ── DOWNLOAD TEMPLATE ──
 function downloadTemplate() {
-  const dateInput = document.getElementById("tplDate").value; // yyyy-mm-dd
-  const session = document.getElementById("tplSession").value.trim();
-  const count = document.getElementById("tplCount").value.trim();
+  const dateInput = document.getElementById("tplDate").value;
+  const session   = document.getElementById("tplSession").value.trim();
+  const count     = document.getElementById("tplCount").value.trim();
 
-  if(!dateInput || !session || !count) {
-    alert("Please fill all fields");
+  if (!dateInput || !session || !count) {
+    setStatus("tplStatus", "⚠️ Please fill all fields before downloading.", "error");
     return;
   }
 
-  // Convert yyyy-mm-dd → mm-dd-yyyy for filename
+  const btn = event.target.closest('button');
+  btn.disabled = true; btn.innerHTML = '<span>⏳</span><span>Generating…</span>';
+
   const [yyyy, mm, dd] = dateInput.split("-");
   const formattedDate = `${mm}-${dd}-${yyyy}`;
 
   fetch(`${GS_URL}?action=getTemplate&date=${dateInput}&session=${session}&count=${count}`)
-    .then(res => res.json())
+    .then(r => r.json())
     .then(data => {
-      if(data.status === "success") {
-        // Convert JSON rows to CSV
+      btn.disabled = false; btn.innerHTML = '<span>⬇️</span><span>Download Template</span>';
+      if (data.status === "success") {
         const csv = data.template.map(r => r.join(",")).join("\n");
         const blob = new Blob([csv], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-
+        const url  = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `Template_${formattedDate}_${session}.csv`; // Use formatted date
-        document.body.appendChild(a); // Needed for Firefox
-        a.click();
-        a.remove(); // Clean up
-
-        document.getElementById("tplStatus").innerText = "Template downloaded!";
+        a.download = `Template_${formattedDate}_${session}.csv`;
+        document.body.appendChild(a); a.click(); a.remove();
+        setStatus("tplStatus", "✅ Template downloaded successfully!", "success");
       } else {
-        document.getElementById("tplStatus").innerText = "Failed to fetch template";
+        setStatus("tplStatus", "❌ Failed to fetch template. Try again.", "error");
       }
     })
-    .catch(err => {
-      console.error(err);
-      document.getElementById("tplStatus").innerText = "Error downloading template";
+    .catch(() => {
+      btn.disabled = false; btn.innerHTML = '<span>⬇️</span><span>Download Template</span>';
+      setStatus("tplStatus", "❌ Network error. Check your connection.", "error");
     });
 }
 
-// ===================== UPLOAD FILE =====================
+// ── UPLOAD FILE ──
 function uploadFile() {
   const file = document.getElementById("uploadFile").files[0];
-  if(!file) { alert("Select a file first"); return; }
+  if (!file) { setStatus("uploadStatus", "⚠️ Please select a file first.", "error"); return; }
+
+  const btn = event.target.closest('button');
+  btn.disabled = true; btn.innerHTML = '<span>⏳</span><span>Uploading…</span>';
 
   const reader = new FileReader();
   reader.onload = function(e) {
     let rows = [];
     const text = e.target.result;
     text.split("\n").forEach(line => {
-      if(line.trim() === "") return;
+      if (line.trim() === "") return;
       rows.push(line.split(","));
     });
 
-    fetch(`${GS_URL}?action=uploadHallPlan&data=${encodeURIComponent(JSON.stringify(rows))}`)
-      .then(res => res.json())
-      .then(data => {
-        if(data.status === "success") {
-          document.getElementById("uploadStatus").innerText = "File uploaded successfully!";
-        }
-      });
+    fetch(GS_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "uploadHallPlan", rows: rows })
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false; btn.innerHTML = '<span>🚀</span><span>Upload File</span>';
+      setStatus("uploadStatus", `✅ ${data.inserted} inserted, ${data.skipped} skipped.`, "success");
+    })
+    .catch(() => {
+      btn.disabled = false; btn.innerHTML = '<span>🚀</span><span>Upload File</span>';
+      setStatus("uploadStatus", "❌ Upload failed. Check your connection.", "error");
+    });
   };
   reader.readAsText(file);
 }
 
-
-// ===================== DELETE RECORDS =====================
-
+// ── DELETE RECORDS ──
 function deleteRecords() {
-  const date = document.getElementById("delDate").value;
+  const date    = document.getElementById("delDate").value;
   const session = document.getElementById("delSession").value;
 
-  if(!date || !session) { alert("Fill date and session"); return; }
+  if (!date || !session) { setStatus("delStatus", "⚠️ Please fill date and session.", "error"); return; }
+  if (!confirm(`Delete ALL records for ${date} — ${session} session?\nThis cannot be undone.`)) return;
 
-  if(!confirm(`Are you sure to delete all records for ${date} - ${session}?`)) return;
+  const btn = event.target.closest('button');
+  btn.disabled = true; btn.innerHTML = '<span>⏳</span><span>Deleting…</span>';
 
   fetch(`${GS_URL}?action=deleteHallPlan&date=${date}&session=${session}`)
-    .then(res => res.json())
+    .then(r => r.json())
     .then(data => {
-      if(data.status === "success") {
-        document.getElementById("delStatus").innerText = `Deleted ${data.deleted} records`;
+      btn.disabled = false; btn.innerHTML = '<span>🗑️</span><span>Delete Records</span>';
+      if (data.status === "success") {
+        setStatus("delStatus", `✅ ${data.deleted} records deleted successfully.`, "success");
       } else {
-        document.getElementById("delStatus").innerText = `Error: ${data.message}`;
+        setStatus("delStatus", `❌ Error: ${data.message}`, "error");
       }
+    })
+    .catch(() => {
+      btn.disabled = false; btn.innerHTML = '<span>🗑️</span><span>Delete Records</span>';
+      setStatus("delStatus", "❌ Network error. Try again.", "error");
     });
 }
 </script>
-
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -883,7 +883,7 @@ function showPopup(msg,title,icon){
 }
 function closePopup(){document.getElementById('popupOverlay').style.display='none';}
 
-/* ---- SESSION TIME GATE ---- */
+/* ---- SESSION TIME GATE (date + time aware) ---- */
 const SESSION_OPEN = { FN: {h:8,m:15}, AN: {h:12,m:15} };
 let lockTimer = null;
 let quoteRotator = null;
@@ -916,24 +916,49 @@ function showNextQuote(){
   },420);
 }
 
-function getOpenTimeMs(session){
-  const now=new Date();
-  const open=SESSION_OPEN[session];
-  return new Date(now.getFullYear(),now.getMonth(),now.getDate(),open.h,open.m,0,0)-now;
+function getExamDateParts(){
+  const v=document.getElementById('date').value;
+  if(!v) return null;
+  const [y,m,d]=v.split('-').map(Number);
+  return {y,m:m-1,d};
 }
-function isSessionOpen(session){ return getOpenTimeMs(session)<=0; }
+
+/* ms remaining until the session opens ON THE SELECTED EXAM DATE */
+function getOpenTimeMs(session){
+  const p=getExamDateParts();
+  if(!p) return 0;
+  const open=SESSION_OPEN[session];
+  const target=new Date(p.y,p.m,p.d,open.h,open.m,0,0);
+  return target-new Date();
+}
+
+/* returns: 'nodate' | 'past' | 'open' | 'locked' */
+function getSessionState(session){
+  const p=getExamDateParts();
+  if(!p) return 'nodate';
+  const now=new Date();
+  const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const exam=new Date(p.y,p.m,p.d);
+  if(exam<today) return 'past';
+  if(exam>today) return 'locked';          // exam is on a future day
+  return getOpenTimeMs(session)<=0 ? 'open' : 'locked';  // exam is today
+}
+function isSessionOpen(session){ return getSessionState(session)==='open'; }
 
 function startLockCountdown(session){
   if(lockTimer) clearInterval(lockTimer);
   if(quoteRotator) clearInterval(quoteRotator);
-  const label = session==='FN'?'8:15 AM':'12:15 PM';
+  const p=getExamDateParts();
+  if(!p) return;
+  const timeLabel = session==='FN'?'8:15 AM':'12:15 PM';
   const name  = session==='FN'?'Morning (FN)':'Afternoon (AN)';
+  const dateLabel=`${String(p.d).padStart(2,'0')}/${String(p.m+1).padStart(2,'0')}/${p.y}`;
 
   document.getElementById('lockBanner').style.display='block';
   document.getElementById('lockIconEl').textContent=session==='FN'?'☀️':'🌤️';
-  document.getElementById('lockTitle').textContent=`${name} Portal Opens at ${label}`;
-  document.getElementById('lockSub').textContent=`Use this time wisely — review your notes, stay calm, and get ready to shine! 💜`;
-  document.getElementById('openTimeLabel').textContent=label;
+  document.getElementById('lockTitle').textContent=`${name} Portal Opens on ${dateLabel}`;
+  document.getElementById('lockSub').textContent=`The seat plan is available only on the exam day. Use this time wisely — review your notes, stay calm, and get ready to shine! 💜`;
+  document.getElementById('openTimeLabel').textContent=`${dateLabel}, ${timeLabel}`;
 
   const q=QUOTES[quoteIdx];
   document.getElementById('motQuote').textContent=`"${q.q}"`;
@@ -950,6 +975,8 @@ function startLockCountdown(session){
       return;
     }
     const totalSec=Math.floor(ms/1000);
+    const days=Math.floor(totalSec/86400);
+    /* hours field includes whole days so the countdown stays accurate for future dates */
     document.getElementById('lcdH').textContent=String(Math.floor(totalSec/3600)).padStart(2,'0');
     document.getElementById('lcdM').textContent=String(Math.floor((totalSec%3600)/60)).padStart(2,'0');
     document.getElementById('lcdS').textContent=String(totalSec%60).padStart(2,'0');
@@ -961,28 +988,38 @@ function startLockCountdown(session){
 function hideLockBanner(){
   document.getElementById('lockBanner').style.display='none';
   if(lockTimer){ clearInterval(lockTimer); lockTimer=null; }
+  if(quoteRotator){ clearInterval(quoteRotator); quoteRotator=null; }
 }
 
-/* Update lock banner whenever session dropdown changes */
-document.getElementById('session').addEventListener('change', function(){
-  const ses=this.value;
-  if(!isSessionOpen(ses)){
-    startLockCountdown(ses);
-  } else {
-    hideLockBanner();
-  }
-});
+/* Re-evaluate lock banner when session OR date changes */
+function refreshLockState(){
+  const ses=document.getElementById('session').value;
+  const st=getSessionState(ses);
+  if(st==='locked') startLockCountdown(ses);
+  else hideLockBanner();
+}
+document.getElementById('session').addEventListener('change', refreshLockState);
+document.getElementById('date').addEventListener('change', refreshLockState);
 
 /* ---- MODAL ---- */
 function showInstructions(){
   const ses = document.getElementById('session').value;
 
-  /* Time gate check */
-  if(!isSessionOpen(ses)){
+  if(!document.getElementById('date').value){showPopup('Please select the exam date.','Missing Date','📅');return;}
+
+  const st = getSessionState(ses);
+
+  if(st==='past'){
+    hideLockBanner();
+    showPopup('The exam date you selected has already passed. The seat plan is available only on the day of the exam.','Exam Date Over','📅');
+    return;
+  }
+
+  if(st==='locked'){
     startLockCountdown(ses);
     const label = ses==='FN' ? '8:15 AM' : '12:15 PM';
     showPopup(
-      `The ${ses==='FN'?'Morning (FN)':'Afternoon (AN)'} session hall plan is only available from ${label}. Please try again after that time.`,
+      `The ${ses==='FN'?'Morning (FN)':'Afternoon (AN)'} hall plan opens only on the exam day (${document.getElementById('date').value.split('-').reverse().join('/')}) from ${label}. Please try again then.`,
       'Portal Not Open Yet',
       '🔒'
     );
@@ -991,7 +1028,6 @@ function showInstructions(){
 
   hideLockBanner();
 
-  if(!document.getElementById('date').value){showPopup('Please select the exam date.','Missing Date','📅');return;}
   if(!document.getElementById('regno').value.trim()){showPopup('Please enter your Register Number.','Missing Input','🎓');return;}
   document.getElementById('instrModal').style.display='flex';
 }
@@ -1045,8 +1081,11 @@ async function viewHallPlan(){
     btn.disabled=false;btn.innerHTML='🚀 Check My Seat';
 
     if(j.status!=='success'){
-      showPopup(j.message||'No record found. Please verify your Register Number, Date and Session.','Not Found','🔍');
+      const icon=(j.status==='pending')?'🔒':(j.status==='closed')?'⛔':'🔍';
+      const title=(j.status==='pending')?'Portal Not Open Yet':(j.status==='closed')?'Session Closed':'Not Found';
+      showPopup(j.message||'No record found. Please verify your Register Number, Date and Session.',title,icon);
       document.getElementById('seatSection').style.display='none';
+      document.getElementById('resultBanner').style.display='none';
       return;
     }
 
